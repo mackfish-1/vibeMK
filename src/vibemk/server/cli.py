@@ -35,6 +35,11 @@ from vibemk.utils import setup_logging
 DEFAULT_HTTP_PORT = 8765
 
 
+def _split_list(value: str) -> list:
+    """Split a comma-separated setting, dropping blanks."""
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 def parse_arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     """Read the transport settings from the command line and the environment.
 
@@ -63,6 +68,19 @@ def parse_arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--path",
         default=os.environ.get("VIBEMK_HTTP_PATH", "/mcp"),
         help="URL path to serve in http mode (default: /mcp)",
+    )
+    parser.add_argument(
+        "--allowed-hosts",
+        type=_split_list,
+        default=_split_list(os.environ.get("VIBEMK_HTTP_ALLOWED_HOSTS", "")),
+        help="comma-separated Host names clients use to reach the server, e.g. mcp.example.com,10.0.0.5 "
+        "(localhost and the bind address are always allowed; '*' disables the check)",
+    )
+    parser.add_argument(
+        "--allowed-origins",
+        type=_split_list,
+        default=_split_list(os.environ.get("VIBEMK_HTTP_ALLOWED_ORIGINS", "")),
+        help="comma-separated browser Origins allowed to connect, e.g. https://app.example.com",
     )
     parser.add_argument(
         "--read-only",
@@ -98,7 +116,13 @@ async def main(argv: Optional[Sequence[str]] = None) -> None:
     server = CheckMKMCPServer(read_only=options.read_only)
     if options.transport == "http":
         try:
-            await server.run_http(host=options.host, port=options.port, path=options.path)
+            await server.run_http(
+                host=options.host,
+                port=options.port,
+                path=options.path,
+                allowed_hosts=options.allowed_hosts,
+                allowed_origins=options.allowed_origins,
+            )
         except ValueError as error:
             # A missing or weak token is a configuration mistake, not a crash.
             print(f"vibemk: {error}", file=sys.stderr)

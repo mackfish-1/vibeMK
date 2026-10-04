@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 """
 
 import threading
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 
 import mcp.types as types
 from mcp.server.lowlevel import Server
@@ -95,31 +95,56 @@ class CheckMKMCPServer:
         self._server.add_request_handler("tools/list", types.PaginatedRequestParams, list_tools)
         self._server.add_request_handler("tools/call", types.CallToolRequestParams, call_tool)
 
-    def http_app(self, path: str = "/mcp", host: str = "127.0.0.1") -> Any:
+    def http_app(
+        self,
+        path: str = "/mcp",
+        host: str = "127.0.0.1",
+        allowed_hosts: Sequence[str] = (),
+        allowed_origins: Sequence[str] = (),
+    ) -> Any:
         """A Starlette application serving MCP over Streamable HTTP.
 
         Every request must carry the bearer token from VIBEMK_HTTP_TOKEN. The
         SDK's DNS-rebinding protection stays on, so a browser on some other
         page cannot drive this server through a victim's network.
+
+        Only the bind address and localhost are accepted as Host by default.
+        Clients that reach the server by another name -- a DNS name, the
+        machine's IP when bound to 0.0.0.0, a reverse proxy -- are refused with
+        "Invalid Host header" until that name is listed in `allowed_hosts`.
+        "*" switches the Host and Origin checks off entirely.
         """
+        hosts = [host, f"{host}:*", "localhost", "localhost:*", "127.0.0.1", "127.0.0.1:*"]
+        for name in allowed_hosts:
+            hosts.append(name)
+            if name != "*" and ":" not in name:
+                hosts.append(f"{name}:*")
         app = self._server.streamable_http_app(
             streamable_http_path=path,
             host=host,
             transport_security=TransportSecuritySettings(
-                allowed_hosts=[host, f"{host}:*", "localhost", "localhost:*", "127.0.0.1", "127.0.0.1:*"],
-                allowed_origins=[],
+                enable_dns_rebinding_protection="*" not in allowed_hosts,
+                allowed_hosts=hosts,
+                allowed_origins=list(allowed_origins),
             ),
         )
         app.add_middleware(BearerTokenMiddleware, token=read_token())
         return app
 
-    async def run_http(self, host: str = "127.0.0.1", port: int = 8765, path: str = "/mcp") -> None:
+    async def run_http(
+        self,
+        host: str = "127.0.0.1",
+        port: int = 8765,
+        path: str = "/mcp",
+        allowed_hosts: Sequence[str] = (),
+        allowed_origins: Sequence[str] = (),
+    ) -> None:
         """Serve MCP over Streamable HTTP until the process is stopped."""
         import uvicorn
 
         # Build the application first: a missing token must stop the server
         # before it announces that it is starting.
-        app = self.http_app(path=path, host=host)
+        app = self.http_app(path=path, host=host, allowed_hosts=allowed_hosts, allowed_origins=allowed_origins)
 
         logger.info("Starting vibeMK %s on http://%s:%d%s", self.mcp_config.server_version, host, port, path)
         if self.read_only:
