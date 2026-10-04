@@ -385,15 +385,15 @@ Authorization: Bearer <VIBEMK_HTTP_TOKEN>
 | URL path | `--path` | `VIBEMK_HTTP_PATH` | `/mcp` |
 | Bearer token | — | `VIBEMK_HTTP_TOKEN` | *required* |
 | Read-only | `--read-only` | `VIBEMK_READ_ONLY` | off |
-| Extra Host names | `--allowed-hosts` | `VIBEMK_HTTP_ALLOWED_HOSTS` | bind address + localhost |
+| Accepted Host names | `--allowed-hosts` | `VIBEMK_HTTP_ALLOWED_HOSTS` | `*` (any) |
 | Browser Origins | `--allowed-origins` | `VIBEMK_HTTP_ALLOWED_ORIGINS` | none |
 
-**"Invalid Host header" (HTTP 421).** DNS-rebinding protection only accepts the
-bind address and `localhost` as the request's `Host`. If clients reach vibeMK by
-another name -- a DNS name, the server's IP, a reverse proxy, or Docker with
-`VIBEMK_HTTP_HOST=0.0.0.0` -- list it: `VIBEMK_HTTP_ALLOWED_HOSTS=mcp.example.com,10.0.0.5`
-(any port is accepted unless you give one). `*` turns the check off; the bearer
-token still applies.
+**Host names.** Any `Host` is accepted by default, so clients can use a DNS name,
+the server's IP or a reverse proxy; the bearer token is what guards access. To
+add DNS-rebinding protection, restrict it:
+`VIBEMK_HTTP_ALLOWED_HOSTS=mcp.example.com,10.0.0.5` (the bind address and
+`localhost` stay allowed; any port is accepted unless you give one). Other names
+then get "Invalid Host header" (HTTP 421).
 
 **Give the client a generous timeout.** CheckMK operations are not all fast:
 activating changes or running a discovery can take tens of seconds, and a
