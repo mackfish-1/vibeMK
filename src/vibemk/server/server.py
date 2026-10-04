@@ -99,20 +99,18 @@ class CheckMKMCPServer:
         self,
         path: str = "/mcp",
         host: str = "127.0.0.1",
-        allowed_hosts: Sequence[str] = (),
+        allowed_hosts: Sequence[str] = ("*",),
         allowed_origins: Sequence[str] = (),
     ) -> Any:
         """A Starlette application serving MCP over Streamable HTTP.
 
-        Every request must carry the bearer token from VIBEMK_HTTP_TOKEN. The
-        SDK's DNS-rebinding protection stays on, so a browser on some other
-        page cannot drive this server through a victim's network.
+        Every request must carry the bearer token from VIBEMK_HTTP_TOKEN.
 
-        Only the bind address and localhost are accepted as Host by default.
-        Clients that reach the server by another name -- a DNS name, the
-        machine's IP when bound to 0.0.0.0, a reverse proxy -- are refused with
-        "Invalid Host header" until that name is listed in `allowed_hosts`.
-        "*" switches the Host and Origin checks off entirely.
+        Any Host is accepted by default ("*"), so clients can reach the server
+        by DNS name, IP or through a reverse proxy; the bearer token is what
+        guards it. Listing names in `allowed_hosts` instead restricts Host to
+        those plus the bind address and localhost, and anything else is refused
+        with "Invalid Host header".
         """
         hosts = [host, f"{host}:*", "localhost", "localhost:*", "127.0.0.1", "127.0.0.1:*"]
         for name in allowed_hosts:
@@ -136,7 +134,7 @@ class CheckMKMCPServer:
         host: str = "127.0.0.1",
         port: int = 8765,
         path: str = "/mcp",
-        allowed_hosts: Sequence[str] = (),
+        allowed_hosts: Sequence[str] = ("*",),
         allowed_origins: Sequence[str] = (),
     ) -> None:
         """Serve MCP over Streamable HTTP until the process is stopped."""

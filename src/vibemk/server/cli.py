@@ -72,9 +72,9 @@ def parse_arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--allowed-hosts",
         type=_split_list,
-        default=_split_list(os.environ.get("VIBEMK_HTTP_ALLOWED_HOSTS", "")),
-        help="comma-separated Host names clients use to reach the server, e.g. mcp.example.com,10.0.0.5 "
-        "(localhost and the bind address are always allowed; '*' disables the check)",
+        default=_split_list(os.environ.get("VIBEMK_HTTP_ALLOWED_HOSTS") or "*"),
+        help="comma-separated Host names to accept, e.g. mcp.example.com,10.0.0.5 "
+        "(default '*': any; when restricted, localhost and the bind address stay allowed)",
     )
     parser.add_argument(
         "--allowed-origins",
