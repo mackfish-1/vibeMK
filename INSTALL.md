@@ -409,6 +409,20 @@ hosts, users and rules. So:
 
 stdio needs none of this, because the client already owns the process.
 
+### 🐳 With Docker Compose
+
+```bash
+cp .env.example .env    # fill in the CheckMK settings and VIBEMK_HTTP_TOKEN
+docker compose up -d --build
+```
+
+The container listens on all of its interfaces, but Compose publishes the
+port on the host's `127.0.0.1:8765` only (`VIBEMK_PUBLISH_PORT` changes the
+port). Clients on the same machine connect to `http://localhost:8765/mcp`.
+To serve other machines, put a TLS reverse proxy in front that forwards to
+it with `Host: localhost`: the DNS-rebinding protection rejects any other
+`Host` header.
+
 ## 🧪 Step 6: Test Installation
 
 The commands below use `vibemk` (Option A). From a source checkout, run
