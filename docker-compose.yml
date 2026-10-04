@@ -12,7 +12,7 @@ services:
     image: vibemk:latest
     container_name: vibemk
     restart: unless-stopped
-    env_file: .env
+    #env_file: .env
     environment:
       VIBEMK_HTTP_TOKEN: ${VIBEMK_HTTP_TOKEN:?set VIBEMK_HTTP_TOKEN in .env}
     ports:
