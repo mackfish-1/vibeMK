@@ -145,6 +145,10 @@ class CheckMKMCPServer:
         app = self.http_app(path=path, host=host, allowed_hosts=allowed_hosts, allowed_origins=allowed_origins)
 
         logger.info("Starting vibeMK %s on http://%s:%d%s", self.mcp_config.server_version, host, port, path)
+        if "*" in allowed_hosts:
+            logger.info("Accepting any Host header")
+        else:
+            logger.info("Accepting Host headers: %s, localhost and %s", ", ".join(allowed_hosts), host)
         if self.read_only:
             logger.info("Read-only mode: only the tools that read are offered")
         if host not in ("127.0.0.1", "localhost", "::1"):
