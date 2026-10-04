@@ -18,7 +18,7 @@ services:
     ports:
       # Published on localhost only. Put a TLS reverse proxy in front before
       # changing this: the token travels in clear text over plain HTTP.
-      - "127.0.0.1:${VIBEMK_PUBLISH_PORT:-8765}:8765"
+      - "${VIBEMK_PUBLISH_PORT:-8765}:8765"
     read_only: true
     tmpfs:
       - /tmp
