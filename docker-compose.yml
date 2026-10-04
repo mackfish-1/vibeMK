@@ -1,0 +1,28 @@
+# Runs vibeMK as a central MCP server over Streamable HTTP.
+#
+#   cp .env.example .env    # fill in the CheckMK settings and VIBEMK_HTTP_TOKEN
+#   docker compose up -d --build
+#
+# Clients connect to http://localhost:8765/mcp with
+# "Authorization: Bearer <VIBEMK_HTTP_TOKEN>". See INSTALL.md
+# ("Hosting vibeMK centrally") before exposing it beyond this machine.
+services:
+  vibemk:
+    build: .
+    image: vibemk:latest
+    container_name: vibemk
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      VIBEMK_HTTP_TOKEN: ${VIBEMK_HTTP_TOKEN:?set VIBEMK_HTTP_TOKEN in .env}
+    ports:
+      # Published on localhost only. Put a TLS reverse proxy in front before
+      # changing this: the token travels in clear text over plain HTTP.
+      - "127.0.0.1:${VIBEMK_PUBLISH_PORT:-8765}:8765"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
