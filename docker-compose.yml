@@ -15,6 +15,8 @@ services:
     #env_file: .env
     environment:
       VIBEMK_HTTP_TOKEN: ${VIBEMK_HTTP_TOKEN:?set VIBEMK_HTTP_TOKEN in .env}
+      # Names clients connect with besides localhost, or they get "Invalid Host header".
+      VIBEMK_HTTP_ALLOWED_HOSTS: ${VIBEMK_HTTP_ALLOWED_HOSTS:-}
     ports:
       # Published on localhost only. Put a TLS reverse proxy in front before
       # changing this: the token travels in clear text over plain HTTP.
