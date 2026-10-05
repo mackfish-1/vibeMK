@@ -14,6 +14,10 @@ services:
     restart: unless-stopped
     #env_file: .env
     environment:
+      CHECKMK_SERVER_URL: ${CHECKMK_SERVER_URL:?set CHECKMK_SERVER_URL in .env}
+      CHECKMK_SITE: ${CHECKMK_SITE:?set CHECKMK_SITE in .env}
+      CHECKMK_USERNAME: ${CHECKMK_USERNAME:?set CHECKMK_USERNAME in .env}
+      CHECKMK_PASSWORD: ${CHECKMK_PASSWORD:?set CHECKMK_PASSWORD in .env}
       VIBEMK_HTTP_TOKEN: ${VIBEMK_HTTP_TOKEN:?set VIBEMK_HTTP_TOKEN in .env}
       # Any Host name is accepted; set a list in .env to restrict it.
       VIBEMK_HTTP_ALLOWED_HOSTS: ${VIBEMK_HTTP_ALLOWED_HOSTS:-*}
